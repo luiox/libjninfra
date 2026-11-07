@@ -75,11 +75,16 @@ target("libjninfra_unittest")
     add_packages("libca", "gtest")
     add_files("test/unittest/*.cpp")
     add_includedirs("test_helper")
+    -- JAVA_HOME include 不再经 libjninfra public 传导（包导出见 xmake.lua 头注），
+    -- 库自身 dev target 显式声明。
+    add_includedirs(path.join(java_home, "include"))
     set_rundir("$(projectdir)")
 
     if is_plat("windows") then
+        add_includedirs(path.join(java_home, "include", "win32"))
         add_cxflags("/utf-8", {tools = "cl"})
     elseif is_plat("linux") then
+        add_includedirs(path.join(java_home, "include", "linux"))
         add_syslinks("pthread")
     end
 
@@ -91,12 +96,15 @@ target("libjninfra_smoke_agent")
     add_packages("libca")
     add_files("test/smoke_agent/*.cpp")
     add_includedirs("src")
+    add_includedirs(path.join(java_home, "include"))
 
     if is_plat("windows") then
+        add_includedirs(path.join(java_home, "include", "win32"))
         add_cxflags("/utf-8", {tools = "cl"})
         add_linkdirs(path.join(java_home, "lib"))
         add_links("jvm")
     elseif is_plat("linux") then
+        add_includedirs(path.join(java_home, "include", "linux"))
         add_syslinks("pthread")
         add_linkdirs(path.join(java_home, "lib", "server"))
         add_links("jvm")
