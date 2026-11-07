@@ -37,6 +37,10 @@ target("libjninfra")
     set_languages("cxx17")
     set_warnings("all")
 
+    -- Linux 上 smoke_agent（shared）会链接本静态库，非 PIC 目标代码里对
+    -- gHotSpotVM* 导出符号取址在 -shared 链接时报 R_X86_64_PC32；显式全 PIC。
+    set_policy("build.fpic", true)
+
     add_packages("libca")
     add_files("src/jninfra/**.cpp")
     add_headerfiles("src/(jninfra/**.hpp)")
