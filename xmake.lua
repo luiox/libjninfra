@@ -49,11 +49,12 @@ target("libjninfra")
     add_headerfiles("src/(jninfra/**.hpp)")
     add_includedirs("src", {public = true})
 
-    -- JNI/JVMTI 头随公开头传递（jninfra 公开头的签名里出现 jint/jvmtiError），
-    -- 消费方只需自带 JAVA_HOME 环境，不必手工加 include。
-    add_includedirs(path.join(java_home, "include"), {public = true})
+    -- JNI/JVMTI 头：开发态编译需要。刻意不公开——绝对路径 include 经包安装
+    -- 导出会粘进 installdir 形成非法路径；包消费者由包定义 on_load 按其自身
+    -- JAVA_HOME 环境补充（见消费方 xmake/packages/*.lua）。
+    add_includedirs(path.join(java_home, "include"))
     if is_plat("windows") then
-        add_includedirs(path.join(java_home, "include", "win32"), {public = true})
+        add_includedirs(path.join(java_home, "include", "win32"))
         add_cxflags("/utf-8", {tools = "cl"})
     elseif is_plat("linux") then
         add_includedirs(path.join(java_home, "include", "linux"), {public = true})
