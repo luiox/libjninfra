@@ -49,11 +49,12 @@ target("libjninfra")
     add_headerfiles("src/(jninfra/**.hpp)")
     add_includedirs("src", {public = true})
 
-    -- JNI/JVMTI 头随公开头传递（jninfra 公开头的签名里出现 jint/jvmtiError），
-    -- 消费方只需自带 JAVA_HOME 环境，不必手工加 include。
-    add_includedirs(path.join(java_home, "include"), {public = true})
+    -- JNI/JVMTI 头：开发态编译需要。刻意不公开——绝对路径 include 经包安装
+    -- 导出会粘进 installdir 形成非法路径；包消费者由包定义 on_load 按其自身
+    -- JAVA_HOME 环境补充（见消费方 xmake/packages/*.lua）。
+    add_includedirs(path.join(java_home, "include"))
     if is_plat("windows") then
-        add_includedirs(path.join(java_home, "include", "win32"), {public = true})
+        add_includedirs(path.join(java_home, "include", "win32"))
         add_cxflags("/utf-8", {tools = "cl"})
     elseif is_plat("linux") then
         add_includedirs(path.join(java_home, "include", "linux"), {public = true})
@@ -74,11 +75,16 @@ target("libjninfra_unittest")
     add_packages("libca", "gtest")
     add_files("test/unittest/*.cpp")
     add_includedirs("test_helper")
+    -- JAVA_HOME include 不再经 libjninfra public 传导（包导出见 xmake.lua 头注），
+    -- 库自身 dev target 显式声明。
+    add_includedirs(path.join(java_home, "include"))
     set_rundir("$(projectdir)")
 
     if is_plat("windows") then
+        add_includedirs(path.join(java_home, "include", "win32"))
         add_cxflags("/utf-8", {tools = "cl"})
     elseif is_plat("linux") then
+        add_includedirs(path.join(java_home, "include", "linux"))
         add_syslinks("pthread")
     end
 
@@ -90,12 +96,15 @@ target("libjninfra_smoke_agent")
     add_packages("libca")
     add_files("test/smoke_agent/*.cpp")
     add_includedirs("src")
+    add_includedirs(path.join(java_home, "include"))
 
     if is_plat("windows") then
+        add_includedirs(path.join(java_home, "include", "win32"))
         add_cxflags("/utf-8", {tools = "cl"})
         add_linkdirs(path.join(java_home, "lib"))
         add_links("jvm")
     elseif is_plat("linux") then
+        add_includedirs(path.join(java_home, "include", "linux"))
         add_syslinks("pthread")
         add_linkdirs(path.join(java_home, "lib", "server"))
         add_links("jvm")
